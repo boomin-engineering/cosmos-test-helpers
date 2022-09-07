@@ -30,6 +30,8 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
+        env:
+          TEST_COSMOS_CONNECTION_STRING: ${{ secrets.TEST_COSMOS_CONNECTION_STRING }}
 
       - name: Pack
         run: dotnet pack --configuration Release --output .nupkgs -p:VersionPrefix="${{ steps.version.outputs.version_3 }}" --version-suffix "${{ steps.version.outputs.version_suffix }}"
