@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using CosmosTestHelpers.IntegrationTests.TestModels;
 using Microsoft.Azure.Cosmos;
 
 namespace CosmosTestHelpers.IntegrationTests;
@@ -211,9 +210,9 @@ public sealed class TestCosmos : IDisposable
         return (realQuery, realException, inMemoryQuery, testException);
     }
 
-    public async Task<(ItemResponse<TestModel> realResult, ItemResponse<TestModel> testResult)> WhenCreating(
-        TestModel testModel,
-        PartitionKey partitionKey,
+    public async Task<(ItemResponse<T> realResult, ItemResponse<T> testResult)> WhenCreating<T>(
+        T testModel,
+        PartitionKey? partitionKey = null,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
     {
@@ -222,19 +221,9 @@ public sealed class TestCosmos : IDisposable
         return (realResult, testResult);
     }
 
-    public async Task<(ItemResponse<TripleUniqueKeyModel> realResult, ItemResponse<TripleUniqueKeyModel> testResult)> WhenCreatingTripleKeyModel(
-        TripleUniqueKeyModel testModel,
-        ItemRequestOptions testRequestOptions = null,
-        ItemRequestOptions realRequestOptions = null)
-    {
-        var realResult = await _realContainer.CreateItemAsync(testModel, requestOptions: realRequestOptions);
-        var testResult = await _testContainer.CreateItemAsync(testModel, requestOptions: testRequestOptions);
-        return (realResult, testResult);
-    }
-
-    public async Task<(CosmosException realException, CosmosException testException)> WhenCreatingProducesException(
-        TestModel testModel,
-        PartitionKey partitionKey,
+    public async Task<(CosmosException realException, CosmosException testException)> WhenCreatingProducesException<T>(
+        T testModel,
+        PartitionKey? partitionKey = null,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
     {
@@ -262,37 +251,8 @@ public sealed class TestCosmos : IDisposable
         return (real, test);
     }
 
-    public async Task<(CosmosException realException, CosmosException testException)> WhenCreatingTripleKeyModelProducesException(
-        TripleUniqueKeyModel testModel,
-        ItemRequestOptions testRequestOptions = null,
-        ItemRequestOptions realRequestOptions = null)
-    {
-        CosmosException real = null;
-        CosmosException test = null;
-
-        try
-        {
-            await _realContainer.CreateItemAsync(testModel, requestOptions: realRequestOptions);
-        }
-        catch (CosmosException exc)
-        {
-            real = exc;
-        }
-
-        try
-        {
-            await _testContainer.CreateItemAsync(testModel, requestOptions: testRequestOptions);
-        }
-        catch (CosmosException exc)
-        {
-            test = exc;
-        }
-
-        return (real, test);
-    }
-
-    public async Task<(ItemResponse<TestModel> realResult, ItemResponse<TestModel> testResult)> WhenUpserting(
-        TestModel testModel,
+    public async Task<(ItemResponse<T> realResult, ItemResponse<T> testResult)> WhenUpserting<T>(
+        T testModel,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
     {
@@ -301,18 +261,8 @@ public sealed class TestCosmos : IDisposable
         return (realResult, testResult);
     }
 
-    public async Task<(ItemResponse<TripleUniqueKeyModel> realResult, ItemResponse<TripleUniqueKeyModel> testResult)> WhenUpsertingTripleKeyModel(
-        TripleUniqueKeyModel testModel,
-        ItemRequestOptions testRequestOptions = null,
-        ItemRequestOptions realRequestOptions = null)
-    {
-        var realResult = await _realContainer.UpsertItemAsync(testModel, requestOptions: realRequestOptions);
-        var testResult = await _testContainer.UpsertItemAsync(testModel, requestOptions: testRequestOptions);
-        return (realResult, testResult);
-    }
-
-    public async Task<(ItemResponse<TestModel> realResult, ItemResponse<TestModel> testResult)> WhenReplacing(
-        TestModel testModel,
+    public async Task<(ItemResponse<T> realResult, ItemResponse<T> testResult)> WhenReplacing<T>(
+        T testModel,
         string id,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
@@ -322,14 +272,14 @@ public sealed class TestCosmos : IDisposable
         return (realResult, testResult);
     }
 
-    public async Task<(ItemResponse<TestModel> realResult, ItemResponse<TestModel> testResult)> WhenDeleting(
+    public async Task<(ItemResponse<T> realResult, ItemResponse<T> testResult)> WhenDeleting<T>(
         string id,
         PartitionKey partitionKey,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
     {
-        var realResult = await _realContainer.DeleteItemAsync<TestModel>(id, partitionKey, realRequestOptions);
-        var testResult = await _testContainer.DeleteItemAsync<TestModel>(id, partitionKey, testRequestOptions);
+        var realResult = await _realContainer.DeleteItemAsync<T>(id, partitionKey, realRequestOptions);
+        var testResult = await _testContainer.DeleteItemAsync<T>(id, partitionKey, testRequestOptions);
         return (realResult, testResult);
     }
 
@@ -351,8 +301,8 @@ public sealed class TestCosmos : IDisposable
         return (realResult, testResult);
     }
 
-    public async Task<(CosmosException realException, CosmosException testException)> WhenUpsertingProducesException(
-        TestModel testModel,
+    public async Task<(CosmosException realException, CosmosException testException)> WhenUpsertingProducesException<T>(
+        T testModel,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
     {
@@ -380,37 +330,8 @@ public sealed class TestCosmos : IDisposable
         return (real, test);
     }
 
-    public async Task<(CosmosException realException, CosmosException testException)> WhenUpsertingTripleKeyModelProducesException(
-        TripleUniqueKeyModel testModel,
-        ItemRequestOptions testRequestOptions = null,
-        ItemRequestOptions realRequestOptions = null)
-    {
-        CosmosException real = null;
-        CosmosException test = null;
-
-        try
-        {
-            await _realContainer.UpsertItemAsync(testModel, requestOptions: realRequestOptions);
-        }
-        catch (CosmosException exc)
-        {
-            real = exc;
-        }
-
-        try
-        {
-            await _testContainer.UpsertItemAsync(testModel, requestOptions: testRequestOptions);
-        }
-        catch (CosmosException exc)
-        {
-            test = exc;
-        }
-
-        return (real, test);
-    }
-
-    public async Task<(CosmosException realException, CosmosException testException)> WhenReplacingProducesException(
-        TestModel testModel,
+    public async Task<(CosmosException realException, CosmosException testException)> WhenReplacingProducesException<T>(
+        T testModel,
         string id,
         ItemRequestOptions testRequestOptions = null,
         ItemRequestOptions realRequestOptions = null)
@@ -439,7 +360,7 @@ public sealed class TestCosmos : IDisposable
         return (real, test);
     }
 
-    public async Task<(CosmosException realException, CosmosException testException)> WhenDeletingProducesException(
+    public async Task<(CosmosException realException, CosmosException testException)> WhenDeletingProducesException<T>(
         string id,
         PartitionKey partitionKey,
         ItemRequestOptions testRequestOptions = null,
@@ -450,7 +371,7 @@ public sealed class TestCosmos : IDisposable
 
         try
         {
-            await _realContainer.DeleteItemAsync<TestModel>(id, partitionKey, realRequestOptions);
+            await _realContainer.DeleteItemAsync<T>(id, partitionKey, realRequestOptions);
         }
         catch (CosmosException exc)
         {
@@ -459,7 +380,7 @@ public sealed class TestCosmos : IDisposable
 
         try
         {
-            await _testContainer.DeleteItemAsync<TestModel>(id, partitionKey, testRequestOptions);
+            await _testContainer.DeleteItemAsync<T>(id, partitionKey, testRequestOptions);
         }
         catch (CosmosException exc)
         {
@@ -470,14 +391,14 @@ public sealed class TestCosmos : IDisposable
     }
 
     [SuppressMessage("", "CA1031", Justification = "I want to catch all exceptions.")]
-    public async Task<(Exception realException, Exception testException)> WhenReadItemProducesException(string id)
+    public async Task<(Exception realException, Exception testException)> WhenReadItemProducesException<T>(string id)
     {
         Exception real = null;
         Exception test = null;
 
         try
         {
-            await _realContainer.ReadItemAsync<TestModel>(id, PartitionKey.None);
+            await _realContainer.ReadItemAsync<T>(id, PartitionKey.None);
         }
         catch (Exception exc)
         {
@@ -486,7 +407,7 @@ public sealed class TestCosmos : IDisposable
 
         try
         {
-            await _testContainer.ReadItemAsync<TestModel>(id, PartitionKey.None);
+            await _testContainer.ReadItemAsync<T>(id, PartitionKey.None);
         }
         catch (Exception exc)
         {
