@@ -1,16 +1,3 @@
-﻿namespace CosmosTestHelpers
-{
-    public class TestContainerItem<T>
-    {
-        public string PartitionKey { get; }
-        public string Id { get; }
-        public T Document { get; }
+﻿namespace CosmosTestHelpers;
 
-        public TestContainerItem(string partitionKey, string id, T document)
-        {
-            PartitionKey = partitionKey;
-            Id = id;
-            Document = document;
-        }
-    }
-}
+public record TestContainerItem<T>(string PartitionKey, string Id, T Document);
