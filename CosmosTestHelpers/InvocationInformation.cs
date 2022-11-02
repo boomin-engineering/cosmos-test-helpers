@@ -1,12 +1,3 @@
-﻿namespace CosmosTestHelpers
-{
-    public class InvocationInformation
-    {
-        public string MethodName { get; }
+﻿namespace CosmosTestHelpers;
 
-        public InvocationInformation(string methodName)
-        {
-            MethodName = methodName;
-        }
-    }
-}
+public record InvocationInformation(string MethodName);

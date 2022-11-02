@@ -3,34 +3,44 @@ using FluentAssertions;
 using Microsoft.Azure.Cosmos;
 using Xunit;
 
-namespace CosmosTestHelpers.IntegrationTests
+namespace CosmosTestHelpers.IntegrationTests;
+
+[Collection("Integration Tests")]
+public sealed class CosmosUpsertTestsOnTripleUniqueKey : IAsyncLifetime, IDisposable
 {
-    [Collection("Integration Tests")]
-    public sealed class CosmosUpsertTestsOnTripleUniqueKey : IAsyncLifetime, IDisposable
+    private TestCosmos _testCosmos;
+
+    [Fact]
+    public async Task UpsertNonExistingIsEquivalent()
     {
-        private TestCosmos _testCosmos;
+        var (realResult, testResult) = await _testCosmos.WhenUpserting(
+            new TripleUniqueKeyModel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = "Fred Blogs",
+                ItemId = "MT12342",
+                Type = TestEnum.Value1
+            });
 
-        [Fact]
-        public async Task UpsertNonExistingIsEquivalent()
+        realResult.StatusCode.Should().Be(testResult.StatusCode);
+        realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
+    }
+
+    [Fact]
+    public async Task UpsertExistingIsEquivalent()
+    {
+        var id = Guid.NewGuid();
+
+        await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
         {
-            var (realResult, testResult) = await _testCosmos.WhenUpsertingTripleKeyModel(
-                new TripleUniqueKeyModel
-                {
-                    Id = Guid.NewGuid(),
-                    CustomerId = "Fred Blogs",
-                    ItemId = "MT12342",
-                    Type = TestEnum.Value1
-                });
+            Id = id,
+            CustomerId = "Fred Blogs",
+            ItemId = "MT12342",
+            Type = TestEnum.Value1
+        });
 
-            realResult.StatusCode.Should().Be(testResult.StatusCode);
-            realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
-        }
-
-        [Fact]
-        public async Task UpsertExistingIsEquivalent()
-        {
-            var id = Guid.NewGuid();
-            await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
+        var (realResult, testResult) = await _testCosmos.WhenUpserting(
+            new TripleUniqueKeyModel
             {
                 Id = id,
                 CustomerId = "Fred Blogs",
@@ -38,103 +48,100 @@ namespace CosmosTestHelpers.IntegrationTests
                 Type = TestEnum.Value1
             });
 
-            var (realResult, testResult) = await _testCosmos.WhenUpsertingTripleKeyModel(
-                new TripleUniqueKeyModel
-                {
-                    Id = id,
-                    CustomerId = "Fred Blogs",
-                    ItemId = "MT12342",
-                    Type = TestEnum.Value1
-                });
+        realResult.StatusCode.Should().Be(testResult.StatusCode);
+        realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
+    }
 
-            realResult.StatusCode.Should().Be(testResult.StatusCode);
-            realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
-        }
+    [Fact]
+    public async Task UpsertUniqueKeyViolationIsEquivalent()
+    {
+        var id = Guid.NewGuid();
 
-        [Fact]
-        public async Task UpsertUniqueKeyViolationIsEquivalent()
+        await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
         {
-            var id = Guid.NewGuid();
-            await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
+            Id = id,
+            CustomerId = "Fred Blogs",
+            ItemId = "MT12342",
+            Type = TestEnum.Value1
+        });
+
+        var (realException, testException) = await _testCosmos.WhenUpsertingProducesException(
+            new TripleUniqueKeyModel
             {
-                Id = id,
+                Id = Guid.NewGuid(),
                 CustomerId = "Fred Blogs",
                 ItemId = "MT12342",
                 Type = TestEnum.Value1
             });
 
-            var (realException, testException) = await _testCosmos.WhenUpsertingTripleKeyModelProducesException(
-                new TripleUniqueKeyModel
-                {
-                    Id = Guid.NewGuid(),
-                    CustomerId = "Fred Blogs",
-                    ItemId = "MT12342",
-                    Type = TestEnum.Value1
-                });
+        realException.Should().NotBeNull();
+        testException.Should().NotBeNull();
+        realException.StatusCode.Should().Be(testException.StatusCode);
+        realException.Should().BeOfType(testException.GetType());
+    }
 
-            realException.Should().NotBeNull();
-            testException.Should().NotBeNull();
-            realException.StatusCode.Should().Be(testException.StatusCode);
-            realException.Should().BeOfType(testException.GetType());
-        }
-
-        [Fact]
-        public async Task CreateNonExistingIsEquivalent()
-        {
-            var (realResult, testResult) = await _testCosmos.WhenCreatingTripleKeyModel(
-                new TripleUniqueKeyModel
-                {
-                    Id = Guid.NewGuid(),
-                    CustomerId = "Fred Blogs",
-                    ItemId = "MT12342",
-                    Type = TestEnum.Value1
-                });
-
-            realResult.StatusCode.Should().Be(testResult.StatusCode);
-            realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
-        }
-
-        [Fact]
-        public async Task CreateUniqueKeyViolationIsEquivalent()
-        {
-            var id = Guid.NewGuid();
-            await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
+    [Fact]
+    public async Task CreateNonExistingIsEquivalent()
+    {
+        var (realResult, testResult) = await _testCosmos.WhenCreating(
+            new TripleUniqueKeyModel
             {
-                Id = id,
+                Id = Guid.NewGuid(),
                 CustomerId = "Fred Blogs",
                 ItemId = "MT12342",
                 Type = TestEnum.Value1
             });
 
-            var (realException, testException) = await _testCosmos.WhenCreatingTripleKeyModelProducesException(
-                new TripleUniqueKeyModel
-                {
-                    Id = Guid.NewGuid(),
-                    CustomerId = "Fred Blogs",
-                    ItemId = "MT12342",
-                    Type = TestEnum.Value1
-                });
+        realResult.StatusCode.Should().Be(testResult.StatusCode);
+        realResult.Resource.Should().BeEquivalentTo(testResult.Resource);
+    }
 
-            realException.Should().NotBeNull();
-            testException.Should().NotBeNull();
-            realException.StatusCode.Should().Be(testException.StatusCode);
-            realException.Should().BeOfType(testException.GetType());
-        }
+    [Fact]
+    public async Task CreateUniqueKeyViolationIsEquivalent()
+    {
+        var id = Guid.NewGuid();
 
-        public Task InitializeAsync()
+        await _testCosmos.GivenAnExistingItem(new TripleUniqueKeyModel
         {
-            _testCosmos = new TestCosmos();
-            return _testCosmos.SetupAsync("/partitionKey", new UniqueKeyPolicy { UniqueKeys = { new UniqueKey { Paths = { "/CustomerId", "/ItemId", "/Type" } } } });
-        }
+            Id = id,
+            CustomerId = "Fred Blogs",
+            ItemId = "MT12342",
+            Type = TestEnum.Value1
+        });
 
-        public async Task DisposeAsync()
-        {
-            await _testCosmos.CleanupAsync();
-        }
+        var (realException, testException) = await _testCosmos.WhenCreatingProducesException(
+            new TripleUniqueKeyModel
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = "Fred Blogs",
+                ItemId = "MT12342",
+                Type = TestEnum.Value1
+            });
 
-        public void Dispose()
+        realException.Should().NotBeNull();
+        testException.Should().NotBeNull();
+        realException.StatusCode.Should().Be(testException.StatusCode);
+        realException.Should().BeOfType(testException.GetType());
+    }
+
+    public Task InitializeAsync()
+    {
+        var uniqueKeyPolicy = new UniqueKeyPolicy
         {
-            _testCosmos?.Dispose();
-        }
+            UniqueKeys = { new UniqueKey { Paths = { "/CustomerId", "/ItemId", "/Type" } } }
+        };
+
+        _testCosmos = new TestCosmos();
+        return _testCosmos.SetupAsync("/partitionKey", uniqueKeyPolicy);
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _testCosmos.CleanupAsync();
+    }
+
+    public void Dispose()
+    {
+        _testCosmos?.Dispose();
     }
 }

@@ -1,33 +1,32 @@
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace CosmosTestHelpers.ContainerMockData
+namespace CosmosTestHelpers.ContainerMockData;
+
+[Serializable]
+public class ETagMismatchException : ContainerMockException
 {
-    [Serializable]
-    public class ETagMismatchException : ContainerMockException
-    {
-        public const HttpStatusCode DefaultStatusCode = HttpStatusCode.PreconditionFailed;
+    public const HttpStatusCode DefaultStatusCode = HttpStatusCode.PreconditionFailed;
         
-        public ETagMismatchException()
-            : base(DefaultStatusCode, "Precondition failed")
-        {
-        }
+    public ETagMismatchException()
+        : base(DefaultStatusCode, "Precondition failed")
+    {
+    }
 
-        public ETagMismatchException(string message) 
-            : base(DefaultStatusCode, message)
-        {
-        }
+    public ETagMismatchException(string message) 
+        : base(DefaultStatusCode, message)
+    {
+    }
 
-        public ETagMismatchException(string message, Exception inner) 
-            : base(DefaultStatusCode, message, inner)
-        {
-        }
+    public ETagMismatchException(string message, Exception inner) 
+        : base(DefaultStatusCode, message, inner)
+    {
+    }
 
-        protected ETagMismatchException(
-            SerializationInfo info,
-            StreamingContext context) 
-            : base(info, context)
-        {
-        }
+    protected ETagMismatchException(
+        SerializationInfo info,
+        StreamingContext context) 
+        : base(info, context)
+    {
     }
 }
