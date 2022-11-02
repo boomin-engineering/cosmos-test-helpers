@@ -64,7 +64,7 @@ public class ContainerMock : Container
         CancellationToken cancellationToken = default
     )
     {
-        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(CreateItemAsync)));
+        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(CreateItemStreamAsync)));
 
         streamPayload.Position = 0;
         var streamReader = new StreamReader(streamPayload);
@@ -132,7 +132,7 @@ public class ContainerMock : Container
 
     public override Task<ResponseMessage> ReadItemStreamAsync(string id, PartitionKey partitionKey, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
     {
-        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(ReadItemAsync)));
+        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(ReadItemStreamAsync)));
             
         if (id == string.Empty)
         {
@@ -176,7 +176,7 @@ public class ContainerMock : Container
 
     public override async Task<ResponseMessage> UpsertItemStreamAsync(Stream streamPayload, PartitionKey partitionKey, ItemRequestOptions requestOptions = null, CancellationToken cancellationToken = default)
     {
-        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(UpsertItemAsync)));
+        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(UpsertItemStreamAsync)));
 
         streamPayload.Position = 0;
         var streamReader = new StreamReader(streamPayload);
@@ -234,7 +234,7 @@ public class ContainerMock : Container
             throw new ArgumentNullException(nameof(applyQuery));
         }
 
-        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(QueryAsync)));
+        ThrowNextExceptionIfPresent(new InvocationInformation(nameof(CountAsync)));
 
         var partition = partitionKey == null 
             ? (PartitionKey?)null 
@@ -538,7 +538,6 @@ public class ContainerMock : Container
         {
             return;
         }
-
 
         if (_exceptionsToThrow.TryDequeue(out var exceptionToThrow) && peekedException == exceptionToThrow && exceptionToThrow.exception != null)
         {
